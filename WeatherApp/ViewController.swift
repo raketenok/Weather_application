@@ -15,7 +15,7 @@ class ViewController: UIViewController, OpenWeatherMapDelegate, CLLocationManage
     
     var openWeather = OpenWeatherMap()
     var hud = MBProgressHUD()
-    let locationManager = CLLocationManager()
+    let locationManager : CLLocationManager = CLLocationManager()
     
     
     @IBAction func buttonAction(sender: UIButton) {
@@ -37,19 +37,31 @@ class ViewController: UIViewController, OpenWeatherMapDelegate, CLLocationManage
     @IBOutlet weak var humidityLabel: UILabel!
     @IBOutlet weak var descriptionLabel: UILabel!
     
+    var time1Text: String!
+    var time2Text: String!
+    var time3Text: String!
+    var time4Text: String!
     
+    var temp1Text: String!
+    var temp2Text: String!
+    var temp3Text: String!
+    var temp4Text: String!
     
+    var icon1Image: UIImage!
+    var icon2Image: UIImage!
+    var icon3Image: UIImage!
+    var icon4Image: UIImage!
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "Current", style:UIBarButtonItemStyle.Plain, target: nil, action: nil)
+        
         // Set background
         
-        let background = UIImage(named: "background.png")
-        self.view.backgroundColor = UIColor(patternImage: background!)
-        
-        
-        
+//        let background = UIImage(named: "background.png")
+//        self.view.backgroundColor = UIColor(patternImage: background!)
         
         //set setup
         
@@ -57,9 +69,15 @@ class ViewController: UIViewController, OpenWeatherMapDelegate, CLLocationManage
         
         locationManager.delegate = self
         
+        //точность определение локации (точность зависит от расхода батареи)
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        
+        //метод для разрешения локации только при использовании приложения
         locationManager.requestWhenInUseAuthorization()
+       
+        //следит за приложением и в фоновом режиме
         locationManager.requestAlwaysAuthorization()
+        
         locationManager.startUpdatingLocation()
         
         
@@ -139,51 +157,101 @@ class ViewController: UIViewController, OpenWeatherMapDelegate, CLLocationManage
        
         hud.hideAnimated(true)
         
-        if let tempResult = weatherJson["main"]["temp"].double {
+        
+        if let tempResult = weatherJson["list"][0]["main"]["temp"].double {
             //get country
             
-            let country = weatherJson["sys"]["country"].stringValue
+            let country = weatherJson["city"]["country"].stringValue
             
            //get city name
             
-            let cityName = weatherJson["name"].stringValue
+            let cityName = weatherJson["city"]["name"].stringValue
             print(cityName)
-            self.cityNameLabel.text = "\(cityName),\(country)"
+            self.cityNameLabel?.text = "\(cityName),\(country)"
             
             //get time
             
-            let time = weatherJson["dt"].int
-            let timeToStr = openWeather.timeFromUnix(time!)
-            self.timeLabel.text = "At \(timeToStr) it is"
+            let now = Int(NSDate().timeIntervalSince1970)
+         //   let time = weatherJson["dt"].int
+            let timeToStr = openWeather.timeFromUnix(now)
+            self.timeLabel?.text = "At \(timeToStr) it is"
             
             
             //get convert temperature
             
             let temperature = openWeather.convertTemperature(country, temperature: tempResult)
-            self.tempLabel.text = "\(temperature)"
+            self.tempLabel?.text = "\(temperature)"
             print(temperature)
             
             
             //get icon
-            let weather = weatherJson["weather"][0]
+            let weather = weatherJson["list"][0]["weather"][0]
             let condition = weather["id"].intValue
-            let nightTime = openWeather.isTimeNight(weatherJson)
+            let iconString = weather["icon"].stringValue
+            let nightTime = openWeather.isTimeNight(iconString)
             let icon = openWeather.updateWeatherIcon(condition, nightTime: nightTime)
-            self.iconImageView.image = icon
-            
-            //get description
-            let descript = weather["description"].stringValue
-            self.descriptionLabel.text = "\(descript)"
-            
+            self.iconImageView?.image = icon
+        
             //get wind speed
-            let speedWind = weatherJson["wind"]["speed"].doubleValue
-            self.speedWindLabel.text = "\(speedWind)"
+            let speedWind = weatherJson["list"][0]["wind"]["speed"].doubleValue
+            self.speedWindLabel?.text = "\(speedWind)"
             
             //get humidity
-            let humidity = weatherJson["main"]["humidity"].intValue
-            self.humidityLabel.text = "\(humidity)"
+            let humidity = weatherJson["list"][0]["main"]["humidity"].intValue
+            self.humidityLabel?.text = "\(humidity)"
             
+            //get description
             
+            let descript = weather["description"].stringValue
+            self.descriptionLabel?.text = "\(descript)"
+            let backgroundImage = openWeather.setBackground(descript)
+            self.view.backgroundColor = UIColor(patternImage: backgroundImage)
+            
+        
+                    for index in 1...4 {
+                        if let tempResult = weatherJson["list"][index]["main"]["temp"].double{
+            
+                            //convert temp
+                            let temperature = openWeather.convertTemperature(country, temperature: tempResult)
+            
+                            //time
+                            let time = weatherJson["list"][index]["dt"].int
+                            let timeToStr = openWeather.timeFromUnix(time!)
+                            //         self.timeLabel.text = "At \(timeToStr) it is"
+            
+                            //icon
+                            let weather = weatherJson["list"][index]["weather"][0]
+                            let condition = weather["id"].intValue
+                            let iconString = weather["icon"].stringValue
+                            let nightTime = openWeather.isTimeNight(iconString)
+                            let icon = openWeather.updateWeatherIcon(condition, nightTime: nightTime)
+            
+                            if index == 1 {
+            
+                                time1Text =  "\(timeToStr)"
+                                temp1Text = "\(temperature)"
+                                icon1Image = icon
+            
+                            } else if index == 2 {
+            
+                                time2Text =  "\(timeToStr)"
+                                temp2Text = "\(temperature)"
+                                icon2Image = icon
+            
+                            } else if index == 3 {
+            
+                                time3Text =  "\(timeToStr)"
+                                temp3Text = "\(temperature)"
+                                icon3Image = icon
+                            }else if index == 4 {
+                                
+                                time4Text =  "\(timeToStr)"
+                                temp4Text = "\(temperature)"
+                                icon4Image = icon
+                                
+                            }
+                        }
+                    }
         } else {
             print("Unable load weather info")
         }
@@ -229,6 +297,32 @@ class ViewController: UIViewController, OpenWeatherMapDelegate, CLLocationManage
     func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
         print(error)
         print("Can't get your location")
+    }
+    
+ //MARK: Prepare for segue
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "showMore" {
+            let forecastController = segue.destinationViewController as! ForecastViewController
+            
+            forecastController.temp1 = temp1Text
+            forecastController.temp2 = temp2Text
+            forecastController.temp3 = temp3Text
+            forecastController.temp4 = temp4Text
+            
+            forecastController.time1 = time1Text
+            forecastController.time2 = time2Text
+            forecastController.time3 = time3Text
+            forecastController.time4 = time4Text
+            
+            forecastController.icon1 = icon1Image
+            forecastController.icon2 = icon2Image
+            forecastController.icon3 = icon3Image
+            forecastController.icon4 = icon4Image
+            
+            
+            
+        }
     }
     
 }

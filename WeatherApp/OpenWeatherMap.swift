@@ -25,7 +25,7 @@ protocol OpenWeatherMapDelegate {
 //http://api.openweathermap.org/data/2.5/weather?q=London,uk&appid=44db6a862fba0b067b1930da0d769e98
 
 class OpenWeatherMap {
-    let weatherUrl = "http://api.openweathermap.org/data/2.5/weather?&appid=f6a8f68b522cdbe281a79d23f2802c3c"
+    let weatherUrl = "http://api.openweathermap.org/data/2.5/forecast?&appid=f6a8f68b522cdbe281a79d23f2802c3c"
     var nameCity : String?
     var temp : Double?
     
@@ -147,7 +147,7 @@ class OpenWeatherMap {
         
     }
  */
-    func updateWeatherIcon(condition: Int, nightTime: Bool ) -> UIImage {
+    func updateWeatherIcon(condition: Int, nightTime: Bool) -> UIImage {
         var imageName: String
         switch (condition, nightTime){
         //Thunderstorm
@@ -194,20 +194,24 @@ class OpenWeatherMap {
         return iconImage!
     }
     
-    func isTimeNight (weatherJSON: JSON) -> Bool{
-        
-        var nightTime = false
-        
-        let nowTime = NSDate().timeIntervalSince1970
-        let sunrise = weatherJSON["sys"]["sunrise"].doubleValue
-        let sunset = weatherJSON["sys"]["sunset"].doubleValue
-        
-        if (nowTime < sunrise || nowTime > sunset ){
-            nightTime = true
-        }
-        return nightTime
-        
+    func isTimeNight (icon : String) -> Bool {
+        return icon.rangeOfString("n") != nil
     }
+    
+//    func isTimeNight (weatherJSON: JSON) -> Bool{
+//        
+//        var nightTime = false
+//        
+//        let nowTime = NSDate().timeIntervalSince1970
+//        let sunrise = weatherJSON["sys"]["sunrise"].doubleValue
+//        let sunset = weatherJSON["sys"]["sunset"].doubleValue
+//        
+//        if (nowTime < sunrise || nowTime > sunset ){
+//            nightTime = true
+//        }
+//        return nightTime
+//        
+//    }
     
     
     func convertTemperature (country: String, temperature : Double) -> Double {
@@ -218,6 +222,28 @@ class OpenWeatherMap {
             //convert to C
             return round(temperature - 273.15)
         }
+    }
+    
+    func setBackground (description: String) -> UIImage {
+        
+        // change background image
+        
+        var descript : String
+        switch description{
+        case let string where string == "clear sky" : descript = "sunnyDay"
+        case let string where string == "few clouds" : descript = "fewClouds"
+        case let string where string == "scattered clouds" : descript = "clouds"
+        case let string where string == "broken clouds"   : descript = "clouds"
+        case let string where string == "shower rain" : descript = "rain"
+        case let string where string == "rain"  : descript = "rain"
+        case let string where string == "thunderstorm" : descript = "storm"
+        case let string where string == "snow" : descript = "snow"
+        case let string where string == "mist" : descript = "mist"
+        default: descript = "weather"
+            
+        }
+        let weatherImageBackground = UIImage(named: descript)
+        return weatherImageBackground!
     }
     
 }
