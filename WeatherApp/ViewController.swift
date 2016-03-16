@@ -58,11 +58,6 @@ class ViewController: UIViewController, OpenWeatherMapDelegate, CLLocationManage
         
         self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "Current", style:UIBarButtonItemStyle.Plain, target: nil, action: nil)
         
-        // Set background
-        
-//        let background = UIImage(named: "background.png")
-//        self.view.backgroundColor = UIColor(patternImage: background!)
-        
         //set setup
         
         self.openWeather.delegate = self
@@ -79,35 +74,7 @@ class ViewController: UIViewController, OpenWeatherMapDelegate, CLLocationManage
         locationManager.requestAlwaysAuthorization()
         
         locationManager.startUpdatingLocation()
-        
-        
-//        let stringURL = NSURL(string: url)
-//        let weatherObject = NSData(contentsOfURL: stringURL!)
-//        print(weatherObject)
-//        
-//        let session = NSURLSession.sharedSession()
-//        let task = session.downloadTaskWithURL(stringURL!) { (NSURL, NSURLResponse, NSError) -> Void in
-//         //   print(NSURLResponse)
-//            
-//        let weatherData = NSData(contentsOfURL: stringURL!)
-//        let weatherJson = try! NSJSONSerialization.JSONObjectWithData(weatherData!, options: NSJSONReadingOptions.MutableContainers) as! NSDictionary
-//            
-//        let weather = OpenWeatherMap(weatherJson: weatherJson)
-//            print(weather.nameCity)
-//            print(weather.temp)
-//            print(weather.description)
-//            print(weather.currentTime!)
-//            print(weather.icon)
-//            
-//            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-//                 self.iconImageView.image = weather.icon
-//            })
-//            
-//           
-//            
-//        }
-//        task.resume()
-        
+    
         
     }
 
@@ -139,14 +106,11 @@ class ViewController: UIViewController, OpenWeatherMapDelegate, CLLocationManage
         self.presentViewController(alert, animated: true, completion: nil)
     }
     
-//    func getWeatherFor(city: String) {
-//        print(city)
-//    }
+
 
     func activityIndicator(){
+       
         hud.label.text = "Loading..."
-//        hud.dimBackground = true
-
         self.view.addSubview(hud)
         hud.showAnimated(true)
     }
@@ -172,7 +136,8 @@ class ViewController: UIViewController, OpenWeatherMapDelegate, CLLocationManage
             //get time
             
             let now = Int(NSDate().timeIntervalSince1970)
-         //   let time = weatherJson["dt"].int
+         
+            // let time = weatherJson["dt"].int
             let timeToStr = openWeather.timeFromUnix(now)
             self.timeLabel?.text = "At \(timeToStr) it is"
             
@@ -204,10 +169,9 @@ class ViewController: UIViewController, OpenWeatherMapDelegate, CLLocationManage
             
             let descript = weather["description"].stringValue
             self.descriptionLabel?.text = "\(descript)"
-            let backgroundImage = openWeather.setBackground(descript)
+            let backgroundImage = openWeather.setBackground(condition, description: descript)
             self.view.backgroundColor = UIColor(patternImage: backgroundImage)
             
-        
                     for index in 1...4 {
                         if let tempResult = weatherJson["list"][index]["main"]["temp"].double{
             
@@ -255,14 +219,7 @@ class ViewController: UIViewController, OpenWeatherMapDelegate, CLLocationManage
         } else {
             print("Unable load weather info")
         }
-//        print(openWeather.nameCity)
-//        print(openWeather.temp)
-//        print(openWeather.currentTime)
-//        print(openWeather.icon)
-//        print(openWeather.description)
-//        dispatch_async(dispatch_get_main_queue(), { () -> Void in
-//            self.iconImageView.image = self.openWeather.icon
-//        })
+
     }
     
     func failure() {
@@ -319,9 +276,7 @@ class ViewController: UIViewController, OpenWeatherMapDelegate, CLLocationManage
             forecastController.icon2 = icon2Image
             forecastController.icon3 = icon3Image
             forecastController.icon4 = icon4Image
-            
-            
-            
+          
         }
     }
     

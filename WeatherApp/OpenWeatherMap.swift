@@ -53,10 +53,6 @@ class OpenWeatherMap {
        
         request(Method.GET, weatherUrl, parameters: params).responseJSON { (resp) -> Void in
             debugPrint(resp)
-            //       print(resp.request)
-            //        print(resp.response)
-            //        print (resp.data)
-            //        print(resp.result)
             
             if resp.result.error != nil {
                 print("Error : \(resp.result.error)")
@@ -65,21 +61,8 @@ class OpenWeatherMap {
             } else {
             
             let weatherJson = JSON(resp.result.value!)
-//            if let name = weatherJson["name"].string {
-//                self.nameCity = name
-//            }
-//            if let temperature = weatherJson["main"]["temp"].double {
-//                self.temp = temperature
-//            }
-//            if let descript = weatherJson["weather"][0]["description"].string {
-//                self.description = descript
-//            }
-//            if let currentTime = weatherJson["dt"].int {
-//                self.currentTime = self.timeFromUnix(currentTime)
-//            }
-//            if let iconString = weatherJson["weather"][0]["icon"].string {
-//                self.icon = self.weatherIcon(iconString)
-//            }
+
+
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 self.delegate.updateWeatherInfo(weatherJson)
             })
@@ -91,25 +74,7 @@ class OpenWeatherMap {
         
     }
     
-    
-//    init(weatherJson : NSDictionary) {
-//        
-//        nameCity = weatherJson["name"] as! String
-//        let main = weatherJson ["main"] as? NSDictionary
-//        temp = main!["temp"] as! Int
-//        let weather  = weatherJson["weather"] as! NSArray
-//        let zero = weather[0] as! NSDictionary
-//        description = zero["description"] as! String
-//        
-//        let dt = weatherJson["dt"] as! Int
-//        currentTime = timeFromUnix(dt)
-//        
-//        let iconString = zero["icon"] as! String
-//        icon = weatherIcon(iconString)
-//    }
-    
-    
-    
+   
     func timeFromUnix(unixTime: Int) -> String {
         let timeInSecond = NSTimeInterval(unixTime)
         let weatherDate = NSDate(timeIntervalSince1970: timeInSecond)
@@ -119,34 +84,7 @@ class OpenWeatherMap {
         return dateFormatter.stringFromDate(weatherDate)
     }
     
-   /* func weatherIcon(stringIcon: String) -> UIImage{
-        let imageName: String
-        switch stringIcon{
-            case "01d": imageName = "01d"
-            case "02d": imageName = "02d"
-            case "03d": imageName = "03d"
-            case "04d": imageName = "04d"
-            case "09d": imageName = "09d"
-            case "10d": imageName = "10d"
-            case "11d": imageName = "11d"
-            case "13d": imageName = "13d"
-            case "50d": imageName = "50d"
-            case "01n": imageName = "01n"
-            case "02n": imageName = "02n"
-            case "03n": imageName = "03n"
-            case "04n": imageName = "04n"
-            case "09n": imageName = "09n"
-            case "10n": imageName = "10n"
-            case "11n": imageName = "11n"
-            case "13n": imageName = "13n"
-            case "50n": imageName = "50n"
-        default: imageName = "none"
-        }
-        let iconImage = UIImage(named: imageName)
-        return iconImage!
-        
-    }
- */
+  
     func updateWeatherIcon(condition: Int, nightTime: Bool) -> UIImage {
         var imageName: String
         switch (condition, nightTime){
@@ -194,24 +132,10 @@ class OpenWeatherMap {
         return iconImage!
     }
     
+    
     func isTimeNight (icon : String) -> Bool {
         return icon.rangeOfString("n") != nil
     }
-    
-//    func isTimeNight (weatherJSON: JSON) -> Bool{
-//        
-//        var nightTime = false
-//        
-//        let nowTime = NSDate().timeIntervalSince1970
-//        let sunrise = weatherJSON["sys"]["sunrise"].doubleValue
-//        let sunset = weatherJSON["sys"]["sunset"].doubleValue
-//        
-//        if (nowTime < sunrise || nowTime > sunset ){
-//            nightTime = true
-//        }
-//        return nightTime
-//        
-//    }
     
     
     func convertTemperature (country: String, temperature : Double) -> Double {
@@ -224,26 +148,39 @@ class OpenWeatherMap {
         }
     }
     
-    func setBackground (description: String) -> UIImage {
+    func setBackground (condition: Int, description: String) -> UIImage {
         
         // change background image
         
+        
         var descript : String
-        switch description{
-        case let string where string == "clear sky" : descript = "sunnyDay"
-        case let string where string == "few clouds" : descript = "fewClouds"
-        case let string where string == "scattered clouds" : descript = "clouds"
-        case let string where string == "broken clouds"   : descript = "clouds"
-        case let string where string == "shower rain" : descript = "rain"
-        case let string where string == "rain"  : descript = "rain"
-        case let string where string == "thunderstorm" : descript = "storm"
-        case let string where string == "snow" : descript = "snow"
-        case let string where string == "mist" : descript = "mist"
+        switch (condition, description){
+            
+            //Thunderstorm
+        case let (x,_) where x < 300 : descript = "storm"
+            
+            //Drizzle
+        case let (x,_) where x < 500 : descript = "drizzle"
+            
+            //Rain
+        case let (x,_) where x < 600 : descript = "rain"
+            
+            //snow
+        case let (x,_) where x < 700 : descript = "snow"
+            
+            //Atmosphere
+        case let (x,_) where x < 800 : descript = "mist"
+            
+            //clouds
+        case let (x,_) where x == 800 : descript = "sunnyDay"
+            
+        case let (x,_) where x < 900 : descript = "clouds"
+        
+       
         default: descript = "weather"
             
         }
         let weatherImageBackground = UIImage(named: descript)
         return weatherImageBackground!
     }
-    
-}
+   }
